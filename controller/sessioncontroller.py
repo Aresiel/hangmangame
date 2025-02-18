@@ -13,6 +13,7 @@ def __get_session__(session_id: str):
 
 @session_controller.post("/session/create")
 def create_session():
+    """Create a new session and join it as the creator. Returns the session id and the creator's id and name."""
     creator_name = str(request.json['creator_name'])
     creator_id = helpers.random_id()
     max_guesses = int(request.json['settings']['max_guesses'])
@@ -38,12 +39,16 @@ def create_session():
 
 @session_controller.post("/session/join")
 def join_session():
+    """Join an existing session as a player. Returns the session id and the player's id and name."""
     session_id = str(request.json['session_id'])
     player_name = str(request.json['player_name'])
 
     session = __get_session__(session_id)
     if session is None:
         return "Session not found", 404
+
+    if not session.settings.allow_new_players:
+        return "Session does not allow new players", 403
 
     player_id = helpers.random_id()
     player = Player(player_id, player_name)
@@ -56,4 +61,21 @@ def join_session():
             "name": player_name
         }
     }
+
+@session_controller.put("/session/settings")
+def update_settings():
+    """Update the settings of an existing session. Only the creator is able to update the settings."""
+    raise NotImplementedError()
+
+@session_controller.post("/session/kick")
+def kick_player():
+    """Kick a player from an existing session. Only the creator is able to kick players."""
+    # The game may need to be informed that a player has been kicked somehow.
+    raise NotImplementedError()
+
+@session_controller.post("/session/leave")
+def leave_session():
+    """Leave an existing session. If the creator leaves the session, a new creator must be chosen, if no players remain the session is discarded."""
+    # The game may need to be informed that a player has left somehow.
+    raise NotImplementedError()
 
