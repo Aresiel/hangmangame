@@ -9,6 +9,7 @@ class HangmanGame:
     guessed_letters = set[str]
     remaining_guesses: int
     host: Player
+    turn_order: list[Player]
 
     def __init__(self, word: str, hint: str, host: Player, max_guesses: int):
         self.word = list(word)
@@ -20,6 +21,8 @@ class HangmanGame:
         self.guessed_word = ["_" if char in self.allowed_letters else char for char in self.word]
 
     def guess_letter(self, player: Player, letter: str) -> bool:
+        letter = letter.upper()
+
         if letter in self.guessed_letters or letter not in self.allowed_letters:
             return False
 

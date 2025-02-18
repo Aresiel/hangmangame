@@ -8,8 +8,10 @@ session_controller = Blueprint('session_controller', __name__)
 
 sessions: set[GameSession] = set()
 
+
 def __get_session__(session_id: str):
     return next((s for s in sessions if s.session_id == session_id), None)
+
 
 @session_controller.post("/session/create")
 def create_session():
@@ -37,6 +39,7 @@ def create_session():
         }
     }
 
+
 @session_controller.post("/session/join")
 def join_session():
     """Join an existing session as a player. Returns the session id and the player's id and name."""
@@ -62,10 +65,12 @@ def join_session():
         }
     }
 
+
 @session_controller.put("/session/settings")
 def update_settings():
     """Update the settings of an existing session. Only the creator is able to update the settings."""
     raise NotImplementedError()
+
 
 @session_controller.post("/session/kick")
 def kick_player():
@@ -73,9 +78,15 @@ def kick_player():
     # The game may need to be informed that a player has been kicked somehow.
     raise NotImplementedError()
 
+
 @session_controller.post("/session/leave")
 def leave_session():
     """Leave an existing session. If the creator leaves the session, a new creator must be chosen, if no players remain the session is discarded."""
     # The game may need to be informed that a player has left somehow.
     raise NotImplementedError()
 
+
+@session_controller.get("/session/<session_id>")
+def get_session(session_id: str):
+    """Get the information of an existing session. This includes the session's settings, whether a game is in progress, the turn order, the current player."""
+    raise NotImplementedError()
