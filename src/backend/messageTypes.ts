@@ -25,6 +25,13 @@ export const JoinSession = t.Object({
 })
 export type JoinSession = Static<typeof JoinSession>
 
+export const LeaveSession = t.Object({
+    type: t.Literal("LEAVE_SESSION"),
+    session_id: t.String(),
+    player_id: t.String()
+})
+export type LeaveSession = Static<typeof LeaveSession>
+
 export const SendMessage = t.Object({
     type: t.Literal("SEND_MESSAGE"),
     message: t.String(),
@@ -38,6 +45,7 @@ export const ClientMessage = t.Union([
     Echo,
     CreateSession,
     JoinSession,
+    LeaveSession,
     SendMessage,
 ])
 export type ClientMessage = Static<typeof ClientMessage>
@@ -61,6 +69,18 @@ export const SessionJoined = t.Object({
 })
 export type SessionJoined = Static<typeof SessionJoined>
 
+export const PlayerJoined = t.Object({
+    type: t.Literal("PLAYER_JOINED"),
+    player_name: t.String()
+})
+export type PlayerJoined = Static<typeof PlayerJoined>
+
+export const PlayerLeft = t.Object({
+    type: t.Literal("PLAYER_LEFT"),
+    player_name: t.String()
+})
+export type PlayerLeft = Static<typeof PlayerLeft>
+
 export const MessageSent = t.Object({
     type: t.Literal("MESSAGE_SENT"),
     message: t.String(),
@@ -78,6 +98,8 @@ export const ServerMessage = t.Union([Pong,
     Echo,
     SessionCreated,
     SessionJoined,
+    PlayerJoined,
+    PlayerLeft,
     MessageSent,
     Error
 ])

@@ -8,6 +8,13 @@ export function assertNonNull<T>(value: T | null, message: string = "Value is nu
     return value
 }
 
+export function assertNonUndefined<T>(value: T | undefined, message: string = "Value is undefined"): T {
+    if(value === undefined) {
+        throw new Error(message)
+    }
+    return value
+}
+
 export function castTo<T>(clazz: { new(...args: never): T }, instance: unknown): T {
     if(instance instanceof clazz) {
         return instance as T;

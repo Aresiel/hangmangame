@@ -4,13 +4,55 @@
     <meta charset="UTF-8">
     <title>Title</title>
     
-<script type="module" crossorigin src="./index-5j54ygcq.js"></script></head>
+    
+<link rel="stylesheet" crossorigin href="./index-5b9ate57.css"><script type="module" crossorigin src="./index-58mr3m6c.js"></script></head>
 <body>
-    <textarea id="output" cols="100" rows="50" readonly></textarea>
+    <textarea id="output" cols="200" rows="50" readonly></textarea>
+    <div>
+        <label>
+            Player ID:
+            <input style="width: 36ch" type="text" id="player_id" placeholder="Player ID" readonly>
+        </label>
+        <label>
+            Session ID:
+            <input style="width: 36ch" type="text" id="session_id" placeholder="Session ID" readonly>
+        </label>
+    </div>
+
     <form id="create_session_form">
-        <input type="text" name="player_name" placeholder="Player name">
-        <input type="number" name="max_guesses" placeholder="Max guesses">
+        <label>
+            Player Name:
+            <input type="text" name="player_name" placeholder="Player name" value="Cute Cat">
+        </label>
+        <label>
+            Max Guesses:
+            <input type="number" name="max_guesses" placeholder="Max guesses" value="6">
+        </label>
         <button type="submit">Create session</button>
+    </form>
+
+    <form id="join_session_form">
+        <label>
+            Player Name:
+            <input type="text" name="player_name" placeholder="Player name" value="Playful Puppy">
+        </label>
+        <label>
+            Session ID:
+            <input type="text" name="session_id" placeholder="Session ID">
+        </label>
+        <button type="submit">Join session</button>
+    </form>
+
+    <form id="leave_session_form">
+        <button type="submit" disabled>Leave session</button>
+    </form>
+
+    <form id="send_message_form">
+        <label>
+            Message:
+            <input type="text" name="message" placeholder="Message">
+        </label>
+        <button type="submit">Send message</button>
     </form>
 </body>
 </html>

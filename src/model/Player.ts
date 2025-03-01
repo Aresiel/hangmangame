@@ -8,6 +8,6 @@ export class Player {
     }
 
     public equals(other: Player) {
-        return this.id === other.id;
+        return this.id === other.id && this.name === other.name;
     }
 }

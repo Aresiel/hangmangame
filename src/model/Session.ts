@@ -29,7 +29,20 @@ export class Session {
     }
 
     public addPlayer(player: Player){
+        if(this.players.includes(player)){
+            throw new Error("Player is already in session");
+        }
+
         this.players.push(player);
         this.turnOrder.add(player);
+    }
+
+    public removePlayer(player: Player){
+        if(!this.players.includes(player)){
+            throw new Error("Player is not in session");
+        }
+
+        this.players = this.players.filter(p => !p.equals(player));
+        this.turnOrder.remove(player);
     }
 }
