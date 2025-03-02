@@ -1,10 +1,10 @@
 import {Elysia, t} from 'elysia'
 import { staticPlugin } from "@elysiajs/static";
-import {webSocketRoutes} from "./webSocketHandler";
+import {api} from "./api";
 
 
 const app = new Elysia()
-    .use(webSocketRoutes)
+    .use(api)
     .use(staticPlugin({
         assets: "dist/frontend",
         prefix: "/"

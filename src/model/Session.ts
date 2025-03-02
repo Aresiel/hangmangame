@@ -9,10 +9,10 @@ export class Session {
     private turnOrder: TurnOrder<Player>;
     public game: Game | undefined;
 
-    constructor(maxGuesses: number, host: Player) {
+    constructor(maxGuesses: number) {
         this.id = crypto.randomUUID();
         this.maxGuesses = maxGuesses;
-        this.turnOrder = new TurnOrder([host]);
+        this.turnOrder = new TurnOrder([]);
         this.game = undefined;
     }
 
@@ -50,7 +50,7 @@ export class Session {
 
         this.turnOrder.add(player);
         if(this.game !== undefined){
-            this.game.addPlayer(player);
+            return this.game.addPlayer(player);
         }
     }
 

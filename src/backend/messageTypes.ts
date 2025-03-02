@@ -1,24 +1,22 @@
-import {Static, t} from 'elysia'
+import {Static, t, TSchema} from 'elysia'
+
+
+/**
+ * BOTH CLIENT AND SERVER MESSAGES
+ */
+export const Error = t.Object({
+    type: t.Literal("ERROR"),
+    message: t.String()
+})
+export type Error = Static<typeof Error>
 
 /**
  * MESSAGES CLIENT SENDS TO SERVER
  */
 
-export const Ping = t.Object({
-    type: t.Literal("PING")
-})
-export type Ping = Static<typeof Ping>
-
-export const Echo = t.Object({
-    type: t.Literal("ECHO"),
-    message: t.String()
-})
-export type Echo = Static<typeof Echo>
-
 export const CreateSession = t.Object({
     type: t.Literal("CREATE_SESSION"),
-    max_guesses: t.Number(),
-    host_name: t.String()
+    max_guesses: t.Number()
 })
 export type CreateSession = Static<typeof CreateSession>
 
@@ -44,24 +42,19 @@ export const SendMessage = t.Object({
 })
 export type SendMessage = Static<typeof SendMessage>
 
+export const Subscribe = t.Object({
+    type: t.Literal("SUBSCRIBE"),
+    topic: t.String()
+})
+
 export const ClientMessage = t.Union([
-    Ping,
-    Echo,
-    CreateSession,
-    JoinSession,
-    LeaveSession,
-    SendMessage,
+    Subscribe
 ])
 export type ClientMessage = Static<typeof ClientMessage>
 
 /**
  * MESSAGES SERVER SENDS TO CLIENT
  */
-
-export const Pong = t.Object({
-    type: t.Literal("PONG")
-})
-export type Pong = Static<typeof Pong>
 
 export const SessionObtained = t.Object({
     type: t.Literal("SESSION_OBTAINED"),
@@ -102,18 +95,10 @@ export const MessageSent = t.Object({
 })
 export type MessageSent = Static<typeof MessageSent>
 
-export const Error = t.Object({
-    type: t.Literal("ERROR"),
-    message: t.String()
-})
-export type Error = Static<typeof Error>
-
-export const ServerMessage = t.Union([Pong,
-    Echo,
-    SessionObtained,
-    PlayerObtained,
+export const ServerMessage = t.Union([
     PlayerJoined,
     PlayerLeft,
     MessageSent,
     Error
 ])
+export type ServerMessage = Static<typeof ServerMessage>
