@@ -1,5 +1,7 @@
+import {Result} from "../shared/util";
+
 export class TurnOrder<T> {
-    private readonly queue: T[];
+    private queue: T[];
 
     constructor(objects: T[]) {
         this.queue = objects;
@@ -9,10 +11,10 @@ export class TurnOrder<T> {
      * Take a turn and then return whose turn it is
      * @return the next object
      */
-    public takeTurn(): T {
+    public takeTurn(): Result<T> {
         const object = this.queue.shift();
         if (object === undefined) {
-            throw new Error("No objects in the turn order");
+            return new Error("No objects in the turn order");
         }
         this.queue.push(object);
         return object;
@@ -24,9 +26,9 @@ export class TurnOrder<T> {
      * Calling this after calling next() will return the same object.
      * @return the current object
      */
-    public currentTurn(): T {
+    public currentTurn(): Result<T> {
         if (this.queue.length === 0) {
-            throw new Error("No objects in the turn order");
+            return new Error("No objects in the turn order");
         }
         return this.queue[0];
     }
@@ -41,13 +43,18 @@ export class TurnOrder<T> {
 
     /**
      * Remove an object from the turn order
-     * @param object
+     * @param object the object to remove
+     * @param equality_test a function that returns true if two objects are equal
      */
-    public remove(object: T): void {
-        const index = this.queue.indexOf(object);
-        if (index === -1) {
-            throw new Error("Object not in turn order");
-        }
-        this.queue.splice(index, 1);
+    public remove(object: T, equality_test: ((a: T, b: T) => boolean) = (a, b) => a === b): void {
+        this.queue = this.queue.filter(o => !equality_test(o, object));
+    }
+
+    /**
+     * Get the objects in the turn order
+     * @return the objects in the turn order
+     */
+    public getObjects(): T[] {
+        return this.queue;
     }
 }

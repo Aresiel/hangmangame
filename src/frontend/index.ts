@@ -4,16 +4,25 @@ import {assertNonNull, assertNonUndefined, castTo} from "../shared/util";
 import * as assert from "node:assert";
 
 let session_id: string | undefined = undefined;
-let player_id: string | undefined = undefined;
+let player_public_id: string | undefined = undefined;
+let player_private_id: string | undefined = undefined;
 
 function set_session_id(id: string) {
     session_id = id;
     castTo(HTMLInputElement, assertNonNull(document.getElementById("session_id"))).value = session_id;
 }
 
-function set_player_id(id: string) {
-    player_id = id;
-    castTo(HTMLInputElement, assertNonNull(document.getElementById("player_id"))).value = player_id;
+function set_player_ids(public_id: string, private_id: string) {
+    player_public_id = public_id;
+    player_private_id = private_id;
+    castTo(HTMLInputElement, assertNonNull(document.getElementById("player_public_id"))).value = player_public_id;
+    castTo(HTMLInputElement, assertNonNull(document.getElementById("player_private_id"))).value = player_private_id;
+}
+
+function setFormsToInSessionState(){
+    document.querySelector("#create_session_form>button[type='submit']")?.setAttribute("disabled", "disabled")
+    document.querySelector("#join_session_form>button[type='submit']")?.setAttribute("disabled", "disabled")
+    document.querySelector("#leave_session_form>button[type='submit']")?.removeAttribute("disabled")
 }
 
 const api = treaty<App>(document.location.host);
@@ -27,33 +36,43 @@ function outputToArea(message: string) {
 
 ws.subscribe(({data: message}) => {
     console.log("[ws] got " + JSON.stringify(message));
-    if(message.type === "SESSION_CREATED") {
+    if(message.type === "SESSION_OBTAINED") {
+
         set_session_id(message.session_id)
-        set_player_id(message.player_id)
-        document.querySelector("#create_session_form>button[type='submit']")?.setAttribute("disabled", "disabled")
-        document.querySelector("#join_session_form>button[type='submit']")?.setAttribute("disabled", "disabled")
-        document.querySelector("#leave_session_form>button[type='submit']")?.removeAttribute("disabled")
-        outputToArea(`Session created with id "${message.session_id}" and player id "${message.player_id}"`);
-    } else if(message.type === "SESSION_JOINED") {
-        set_session_id(message.session_id)
-        set_player_id(message.player_id)
-        document.querySelector("#create_session_form>button[type='submit']")?.setAttribute("disabled", "disabled")
-        document.querySelector("#join_session_form>button[type='submit']")?.setAttribute("disabled", "disabled")
-        document.querySelector("#leave_session_form>button[type='submit']")?.removeAttribute("disabled")
-        outputToArea(`Session joined with id "${message.session_id}" and player id "${message.player_id}"`);
+        setFormsToInSessionState()
+        outputToArea(`Session obtained with id "${message.session_id}" and players [${message.players.map(p => p.name).join(", ")}]`);
+
+    } else if(message.type === "PLAYER_OBTAINED") {
+
+        document.title += " - " + message.name;
+        set_player_ids(message.public_id, message.private_id)
+        outputToArea(`Player ${message.name} obtained with public id "${message.public_id}" and private id "${message.private_id}"`);
+
     } else if(message.type == "PLAYER_LEFT") {
-        if(message.player_name)
-        outputToArea(`Player left: ${message.player_name}`);
+
+        if(message.name)
+        outputToArea(`Player left: ${message.name}`);
+
     } else if(message.type === "MESSAGE_SENT") {
-        outputToArea(`${message.player_name}: ${message.message}`);
+
+        outputToArea(`${message.name}: ${message.message}`);
+
     } else if(message.type === "PLAYER_JOINED"){
-        outputToArea(`Player joined: ${message.player_name}`);
+
+        outputToArea(`Player joined: ${message.name}`);
+
     } else if(message.type === "ERROR") {
+
         outputToArea(`Error: ${message.message}`);
+
     } else if(message.type === "ECHO") {
+
         outputToArea(`${message.message}`);
+
     } else if(message.type === "PONG") {
+
         outputToArea("Pong!");
+
     } else {
         const exhaustiveCheck: never = message;
     }
@@ -96,7 +115,7 @@ join_session_form.addEventListener("submit", (event) => {
     ws.send({
         type: "JOIN_SESSION",
         session_id,
-        player_name
+        name: player_name
     })
 })
 
@@ -105,7 +124,7 @@ leave_session_form.addEventListener("submit", (event) => {
     event.preventDefault()
     ws.send({
         type: "LEAVE_SESSION",
-        player_id: assertNonUndefined(player_id, "player_id is undefined"),
+        private_id: assertNonUndefined(player_private_id, "player_private_id is undefined"),
         session_id: assertNonUndefined(session_id, "session_id is undefined")
     })
     outputToArea("Leaving session, refresh the page to start a new session.")
@@ -119,7 +138,7 @@ send_message_form.addEventListener("submit", (event) => {
     ws.send({
         type: "SEND_MESSAGE",
         message,
-        player_id: assertNonUndefined(player_id, "player_id is undefined"),
+        private_id: assertNonUndefined(player_private_id, "player_id is undefined"),
         session_id: assertNonUndefined(session_id, "session_id is undefined")
     })
 })

@@ -23,19 +23,27 @@ export const webSocketRoutes = new Elysia({ prefix: "/ws"})
             } else if(message.type === "CREATE_SESSION") {
 
                 const player = new Player(message.host_name);
-                const session = new Session(message.max_guesses, [player]);
+                const session = new Session(message.max_guesses, player);
                 sessions.set(session.id, session);
                 ws.subscribe(`session-${session.id}`);
 
                 ws.send({
-                    type: "SESSION_CREATED" as const,
-                    session_id: session.id,
-                    player_id: player.id
+                    type: "PLAYER_OBTAINED",
+                    name: player.name,
+                    public_id: player.public_id,
+                    private_id: player.private_id
                 })
 
                 ws.send({
-                    type: "PLAYER_JOINED" as const,
-                    player_name: player.name
+                    type: "SESSION_OBTAINED",
+                    session_id: session.id,
+                    players: session.getPlayers().map(p => ({ public_id: p.public_id, name: p.name }))
+                })
+
+                ws.publish(`session-${session.id}`, {
+                    type: "PLAYER_JOINED",
+                    name: player.name,
+                    public_id: player.public_id
                 })
 
             } else if(message.type === "JOIN_SESSION"){
@@ -44,30 +52,30 @@ export const webSocketRoutes = new Elysia({ prefix: "/ws"})
                 if(session === undefined) {
                     return {type: "ERROR" as const, message: "Session not found"};
                 }
-                const player = new Player(message.player_name);
+
+                const player = new Player(message.name);
                 session.addPlayer(player);
 
                 ws.subscribe(`session-${session.id}`);
 
                 ws.send({
-                    type: "SESSION_JOINED" as const,
-                    session_id: session.id,
-                    player_id: player.id
+                    type: "PLAYER_OBTAINED",
+                    name: player.name,
+                    public_id: player.public_id,
+                    private_id: player.private_id
                 })
 
-                const player_joined = {
-                    type: "PLAYER_JOINED" as const,
-                    player_name: player.name
-                }
-
-                ws.publish(`session-${session.id}`, player_joined);
-                ws.send(player_joined);
-
-                return {
-                    type: "SESSION_JOINED" as const,
+                ws.send({
+                    type: "SESSION_OBTAINED",
                     session_id: session.id,
-                    player_id: player.id
-                };
+                    players: session.getPlayers().map(p => ({ public_id: p.public_id, name: p.name }))
+                })
+
+                ws.publish(`session-${session.id}`, {
+                    type: "PLAYER_JOINED",
+                    name: player.name,
+                    public_id: player.public_id
+                })
 
             } else if(message.type === "LEAVE_SESSION") {
 
@@ -75,21 +83,18 @@ export const webSocketRoutes = new Elysia({ prefix: "/ws"})
                 if(session === undefined) {
                     return {type: "ERROR" as const, message: "Session not found"};
                 }
-                const player = session.players.find(p => p.id === message.player_id);
+                const player = session.getPlayerByPrivateId(message.private_id);
                 if (player === undefined){
                     return {type: "ERROR" as const, message: "Player not found"};
                 }
                 session.removePlayer(player);
 
-                const player_left = {
+                ws.publish(`session-${session.id}`, {
                     type: "PLAYER_LEFT" as const,
-                    player_name: player.name
-                }
-
-                ws.publish(`session-${session.id}`, player_left);
-                ws.send(player_left);
-
-                ws.unsubscribe(`session-${session.id}`);
+                    name: player.name,
+                    public_id: player.public_id
+                });
+                ws.unsubscribe(`session-${session.id}`); // It seems that publishing isn't possible if you're not subscribed?
 
             } else if(message.type === "SEND_MESSAGE"){
 
@@ -97,7 +102,7 @@ export const webSocketRoutes = new Elysia({ prefix: "/ws"})
                 if(session === undefined) {
                     return {type: "ERROR" as const, message: "Session not found"};
                 }
-                const player = session.players.find(p => p.id === message.player_id);
+                const player = session.getPlayerByPrivateId(message.private_id);
                 if (player === undefined){
                     return {type: "ERROR" as const, message: "Player not found"};
                 }
@@ -105,11 +110,12 @@ export const webSocketRoutes = new Elysia({ prefix: "/ws"})
                 const response = {
                     type: "MESSAGE_SENT" as const,
                     message: message.message,
-                    player_name: player.name
+                    name: player.name,
+                    public_id: player.public_id
                 }
 
                 ws.publish(`session-${session.id}`, response);
-                return response;
+                ws.send(response);
             } else {
                 const exhaustiveCheck: never = message;
             }

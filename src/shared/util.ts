@@ -22,3 +22,9 @@ export function castTo<T>(clazz: { new(...args: never): T }, instance: unknown):
         throw new Error(`Value is not of type ${clazz}`);
     }
 }
+
+export type Result<T> = T | Error;
+
+export function ok<T>(result: Result<T>): result is T {
+    return !(result instanceof Error);
+}
